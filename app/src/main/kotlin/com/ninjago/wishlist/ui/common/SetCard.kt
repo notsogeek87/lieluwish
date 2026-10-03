@@ -39,7 +39,7 @@ fun SetCard(
         Box {
             AsyncImage(
                 model = set.thumbUrl ?: set.imageUrl,
-                contentDescription = set.name,
+                contentDescription = set.displayName,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -47,6 +47,13 @@ fun SetCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .padding(8.dp),
             )
+            if ((set.thumbUrl ?: set.imageUrl) == null) {
+                Text(
+                    "🧱",
+                    style = MaterialTheme.typography.displayLarge,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
             HeartButton(
                 liked = liked,
                 onToggle = onToggleHeart,
@@ -56,7 +63,7 @@ fun SetCard(
         }
         Column(Modifier.padding(12.dp)) {
             Text(
-                set.name,
+                set.displayName,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 maxLines = 2,
@@ -68,13 +75,13 @@ fun SetCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                formatPrice(set.price, set.currency),
+                set.displayPrice(),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.ExtraBold,
                 color = NinjaGold,
             )
             Text(
-                set.pieces?.let { "$it pièces" } ?: "Pièces : ?",
+                set.pieces?.let { "$it pièces" } ?: "Pièces : à venir",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

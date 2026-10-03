@@ -38,7 +38,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.ninjago.wishlist.data.local.SetEntity
 import com.ninjago.wishlist.ui.common.HeartButton
-import com.ninjago.wishlist.ui.common.formatPrice
+import com.ninjago.wishlist.ui.common.displayName
+import com.ninjago.wishlist.ui.common.displayPrice
 import com.ninjago.wishlist.ui.common.legoSearchUrl
 import com.ninjago.wishlist.ui.theme.NinjaBlue
 import com.ninjago.wishlist.ui.theme.NinjaGold
@@ -61,7 +62,7 @@ fun DetailScreen(
         contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
-                title = { Text(state.set?.name ?: "", maxLines = 1) },
+                title = { Text(state.set?.displayName ?: "", maxLines = 1) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
@@ -86,7 +87,7 @@ fun DetailScreen(
                 Box {
                     AsyncImage(
                         model = set.imageUrl ?: set.thumbUrl,
-                        contentDescription = set.name,
+                        contentDescription = set.displayName,
                         contentScale = ContentScale.Fit,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -102,9 +103,9 @@ fun DetailScreen(
                     )
                 }
                 Column(Modifier.padding(16.dp)) {
-                    Text(set.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Text(set.displayName, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                     Text(
-                        formatPrice(set.price, set.currency),
+                        set.displayPrice(),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.ExtraBold,
                         color = NinjaGold,

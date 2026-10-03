@@ -49,10 +49,18 @@ fun formatPrice(price: Double?, currency: String?): String {
     return nf.format(price)
 }
 
+/** Brickset nomme "{?}" les sets annoncés dont le nom n'est pas encore connu. */
+val SetEntity.isUnannounced: Boolean get() = name.trim().let { it == "{?}" || it.isEmpty() }
+
+val SetEntity.displayName: String get() = if (isUnannounced) "Set mystère 🥷" else name
+
+fun SetEntity.displayPrice(): String =
+    if (price == null && isUnannounced) "Prix à venir" else formatPrice(price, currency)
+
 fun legoSearchUrl(number: String) = "https://www.lego.com/fr-fr/search?q=$number"
 
 fun buildShareText(items: List<SetEntity>): String {
-    val lines = items.joinToString("\n") { "• ${it.name} (n° ${it.number}) – ${formatPrice(it.price, it.currency)}" }
+    val lines = items.joinToString("\n") { "• ${it.displayName} (n° ${it.number}) – ${it.displayPrice()}" }
     val currencies = items.mapNotNull { it.currency }.distinct()
     val total = if (items.isNotEmpty() && items.all { it.price != null } && currencies.size == 1) {
         "\n\nTotal : ${formatPrice(items.sumOf { it.price ?: 0.0 }, currencies.first())}"
