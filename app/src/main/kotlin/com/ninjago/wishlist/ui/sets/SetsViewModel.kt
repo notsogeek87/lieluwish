@@ -3,6 +3,7 @@ package com.ninjago.wishlist.ui.sets
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ninjago.wishlist.data.SetsRepository
+import com.ninjago.wishlist.ui.common.isUnannounced
 import com.ninjago.wishlist.data.local.SetEntity
 import com.ninjago.wishlist.ui.common.errorMessage
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +36,9 @@ class SetsViewModel(private val repo: SetsRepository) : ViewModel() {
     val state: StateFlow<SetsUiState> = combine(
         repo.sets, repo.favoriteIds, filters, refresh,
     ) { all, favIds, f, r ->
-        val pool = if (f.showOld) all else all.filter { it.isCurrent }
+        // Sets sans nom ni image : masqués (sauf s'ils ont déjà reçu un cœur).
+        val visible = all.filter { !(it.isUnannounced && it.thumbUrl == null && it.imageUrl == null) || it.id in favIds }
+        val pool = if (f.showOld) visible else visible.filter { it.isCurrent }
         val q = f.query.trim()
         val shown = pool.filter { s ->
             (f.year == null || s.year == f.year) &&
