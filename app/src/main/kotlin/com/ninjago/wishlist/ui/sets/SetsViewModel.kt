@@ -20,13 +20,13 @@ data class SetsUiState(
     val years: List<Int> = emptyList(),
     val query: String = "",
     val year: Int? = null,
-    val showOld: Boolean = false,
+    val showOld: Boolean = true,
     val refreshing: Boolean = false,
     val error: String? = null,
     val cacheEmpty: Boolean = true,
 )
 
-private data class Filters(val query: String = "", val year: Int? = null, val showOld: Boolean = false)
+private data class Filters(val query: String = "", val year: Int? = null, val showOld: Boolean = true)
 private data class Refresh(val loading: Boolean = false, val error: String? = null)
 
 class SetsViewModel(private val repo: SetsRepository) : ViewModel() {
