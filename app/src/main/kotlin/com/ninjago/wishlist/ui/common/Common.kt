@@ -49,8 +49,6 @@ fun formatPrice(price: Double?, currency: String?): String {
     return nf.format(price)
 }
 
-fun legoSearchUrl(number: String) = "https://www.lego.com/fr-fr/search?q=$number"
-
 fun buildShareText(items: List<SetEntity>): String {
     val lines = items.joinToString("\n") { "• ${it.name} (n° ${it.number}) – ${formatPrice(it.price, it.currency)}" }
     val currencies = items.mapNotNull { it.currency }.distinct()
