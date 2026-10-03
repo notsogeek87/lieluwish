@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ninjago.wishlist.ui.common.ErrorView
@@ -113,8 +114,17 @@ fun SetsScreen(
                         ErrorView(state.error!!, onRetry = viewModel::onRefresh)
 
                     state.cacheEmpty ->
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(
+                            Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
                             CircularProgressIndicator()
+                            Text(
+                                "Chargement des sets…\nÇa peut prendre quelques secondes",
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(16.dp),
+                            )
                         }
 
                     state.sets.isEmpty() ->

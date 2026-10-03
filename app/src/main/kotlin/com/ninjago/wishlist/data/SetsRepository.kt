@@ -1,6 +1,7 @@
 package com.ninjago.wishlist.data
 
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.room.withTransaction
 import com.ninjago.wishlist.BuildConfig
 import com.ninjago.wishlist.data.local.AppDatabase
@@ -66,6 +67,7 @@ class SetsRepository(
             try {
                 return store(fetchFromBrickset())
             } catch (e: Exception) {
+                Log.e(TAG, "Brickset a échoué", e)
                 firstError = e
             }
         }
@@ -73,6 +75,7 @@ class SetsRepository(
             try {
                 return store(fetchFromRebrickable())
             } catch (e: Exception) {
+                Log.e(TAG, "Rebrickable a échoué", e)
                 return Result.failure(firstError ?: e)
             }
         }
@@ -99,6 +102,7 @@ class SetsRepository(
                 BricksetParams(theme = "Ninjago", pageSize = 500, pageNumber = page, orderBy = "YearFromDESC"),
             )
             val response = brickset.getSets(BuildConfig.BRICKSET_API_KEY, "", params)
+            Log.i(TAG, "Brickset page $page : status=${response.status} matches=${response.matches} sets=${response.sets.size}")
             if (!response.status.equals("success", ignoreCase = true)) {
                 throw IOException("Brickset : ${response.message ?: response.status}")
             }
@@ -198,6 +202,7 @@ class SetsRepository(
     private fun String?.https(): String? = this?.replaceFirst("http://", "https://")
 
     private companion object {
+        const val TAG = "NinjagoSets"
         const val KEY_LAST_REFRESH = "last_refresh"
         const val REFRESH_INTERVAL_MS = 24L * 60 * 60 * 1000
         const val RATE_LIMIT_MS = 1100L

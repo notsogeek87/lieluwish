@@ -125,10 +125,13 @@ fun ErrorView(message: String, onRetry: () -> Unit, modifier: Modifier = Modifie
 fun errorMessage(t: Throwable): String = when (t) {
     is com.ninjago.wishlist.data.MissingApiKeysException ->
         "Clés API manquantes. Demande à tes parents de suivre le README pour les ajouter."
-    is java.net.UnknownHostException, is java.net.SocketTimeoutException, is java.net.ConnectException ->
+    is java.net.UnknownHostException, is java.net.ConnectException ->
         "Pas de connexion internet. Vérifie ton réseau et réessaie."
+    is java.net.SocketTimeoutException, is java.io.InterruptedIOException ->
+        "Le serveur met trop de temps à répondre. Réessaie dans un instant."
     is retrofit2.HttpException ->
         if (t.code() == 401 || t.code() == 403) "Clé API refusée par le serveur."
         else "Le serveur ne répond pas correctement (erreur ${t.code()})."
-    else -> "Impossible de charger les sets. Réessaie dans un instant."
+    // Cas inattendu : on affiche la cause technique pour pouvoir la diagnostiquer.
+    else -> "Impossible de charger les sets.\n(${t::class.simpleName}: ${t.message?.take(160)})"
 }
