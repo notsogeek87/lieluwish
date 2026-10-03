@@ -52,3 +52,13 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 ## Architecture
 
 MVVM · Retrofit + kotlinx.serialization · Room · Coil · Koin · Navigation Compose.
+
+## CI : APK release à chaque push
+
+`.github/workflows/release-apk.yml` construit `release.main.apk` / `release.staging.apk` à chaque push sur
+`main` ou `staging` (onglet *Actions* → run → *Artifacts*).
+
+Secrets du dépôt (*Settings → Secrets and variables → Actions*) :
+`BRICKSET_API_KEY`, `REBRICKABLE_API_KEY` ; pour une signature stable (mises à jour par-dessus l'ancienne
+version) : `RELEASE_KEYSTORE_BASE64` (`base64 -w0 monapp.jks`), `RELEASE_KEYSTORE_PASSWORD`,
+`RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`. Sans keystore, l'APK est signé avec la clé de debug.
