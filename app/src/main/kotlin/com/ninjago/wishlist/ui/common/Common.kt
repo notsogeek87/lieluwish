@@ -141,3 +141,5 @@ fun errorMessage(t: Throwable): String = when (t) {
     // Cas inattendu : on affiche la cause technique pour pouvoir la diagnostiquer.
     else -> "Impossible de charger les sets.\n(${t::class.simpleName}: ${t.message?.take(160)})"
 }
+
+fun legoSearchUrl(number: String) = "https://www.lego.com/fr-fr/search?q=$number"

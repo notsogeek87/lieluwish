@@ -1,5 +1,7 @@
 package com.ninjago.wishlist.ui.detail
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -13,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,13 +30,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.ninjago.wishlist.data.local.SetEntity
 import com.ninjago.wishlist.ui.common.HeartButton
 import com.ninjago.wishlist.ui.common.displayName
 import com.ninjago.wishlist.ui.common.displayPrice
+import com.ninjago.wishlist.ui.common.legoSearchUrl
 import com.ninjago.wishlist.ui.theme.NinjaGold
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -46,6 +52,7 @@ fun DetailScreen(
     viewModel: DetailViewModel = koinViewModel(parameters = { parametersOf(id) }),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     // Les insets système sont déjà gérés par le Scaffold racine.
     Scaffold(
@@ -57,6 +64,13 @@ fun DetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
+                    }
+                },
+                actions = {
+                    state.set?.let { set ->
+                        IconButton(onClick = { shareSet(context, set) }) {
+                            Icon(Icons.Filled.Share, contentDescription = "Partager")
+                        }
                     }
                 },
                 windowInsets = WindowInsets(0),
@@ -120,4 +134,13 @@ private fun InfoRow(label: String, value: String) {
         Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
         Text(value, fontWeight = FontWeight.SemiBold)
     }
+}
+
+private fun shareSet(context: Context, set: SetEntity) {
+    val text = "${set.displayName} (${set.number})\n${legoSearchUrl(set.number)}"
+    val send = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, text)
+    }
+    context.startActivity(Intent.createChooser(send, "Partager"))
 }
