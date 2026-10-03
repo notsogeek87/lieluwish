@@ -39,9 +39,10 @@ android {
         if (releaseKeystore != null) {
             create("release") {
                 storeFile = file(releaseKeystore)
-                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
-                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+                // Valeurs par défaut "ninjago" : seul le fichier keystore (secret) protège la clé.
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")?.takeIf { it.isNotBlank() } ?: "ninjago"
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")?.takeIf { it.isNotBlank() } ?: "ninjago"
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")?.takeIf { it.isNotBlank() } ?: "ninjago"
             }
         }
     }

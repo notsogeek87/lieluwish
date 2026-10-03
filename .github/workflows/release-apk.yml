@@ -41,7 +41,7 @@ jobs:
             echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
             echo "RELEASE_KEYSTORE_FILE=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
           else
-            echo "::warning::RELEASE_KEYSTORE_BASE64 absent : APK signé avec la clé de debug."
+            echo "::warning::RELEASE_KEYSTORE_BASE64 absent : APK signé avec une clé de debug éphémère (pas de mise à jour possible par-dessus la version précédente)."
           fi
 
       - name: Build APK release

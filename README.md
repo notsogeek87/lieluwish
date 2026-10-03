@@ -59,6 +59,12 @@ MVVM · Retrofit + kotlinx.serialization · Room · Coil · Koin · Navigation C
 `main` ou `staging` (onglet *Releases* du dépôt, ou *Actions* → run → *Artifacts*).
 
 Secrets du dépôt (*Settings → Secrets and variables → Actions*) :
-`BRICKSET_API_KEY`, `REBRICKABLE_API_KEY` ; pour une signature stable (mises à jour par-dessus l'ancienne
-version) : `RELEASE_KEYSTORE_BASE64` (`base64 -w0 monapp.jks`), `RELEASE_KEYSTORE_PASSWORD`,
-`RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`. Sans keystore, l'APK est signé avec la clé de debug.
+- `BRICKSET_API_KEY` (et optionnellement `REBRICKABLE_API_KEY`).
+- `RELEASE_KEYSTORE_BASE64` : keystore de signature en base64. **Indispensable pour installer une nouvelle
+  version par-dessus l'ancienne** : sans elle, chaque build est signé avec une clé de debug différente.
+  Alias et mots de passe valent `ninjago` par défaut (surchargeables via `RELEASE_KEYSTORE_PASSWORD`,
+  `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`).
+
+Générer la keystore : `keytool -genkeypair -keystore ninjago.jks -alias ninjago -keyalg RSA -keysize 2048
+-validity 10000 -storepass ninjago -keypass ninjago`, puis `base64 -w0 ninjago.jks`.
+Ne jamais la commiter (le dépôt est public).
