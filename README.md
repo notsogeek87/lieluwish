@@ -56,7 +56,7 @@ MVVM · Retrofit + kotlinx.serialization · Room · Coil · Koin · Navigation C
 ## CI : APK release à chaque push
 
 `.github/workflows/release-apk.yml` construit `release.main.apk` / `release.staging.apk` à chaque push sur
-`main` ou `staging` (onglet *Actions* → run → *Artifacts*).
+`main` ou `staging` (onglet *Releases* du dépôt, ou *Actions* → run → *Artifacts*).
 
 Secrets du dépôt (*Settings → Secrets and variables → Actions*) :
 `BRICKSET_API_KEY`, `REBRICKABLE_API_KEY` ; pour une signature stable (mises à jour par-dessus l'ancienne

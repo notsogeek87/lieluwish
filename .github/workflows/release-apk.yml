@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # nécessaire pour publier la release
 
 concurrency:
   group: release-apk-${{ github.ref_name }}
@@ -54,8 +54,24 @@ jobs:
       - name: Renommer l'APK en release.<branche>.apk
         run: cp app/build/outputs/apk/release/app-release.apk "release.${GITHUB_REF_NAME}.apk"
 
+      # On garde aussi l'APK en artifact du run (pratique pour débugger).
       - uses: actions/upload-artifact@v4
         with:
           name: release.${{ github.ref_name }}
           path: release.${{ github.ref_name }}.apk
           if-no-files-found: error
+
+      # Une release par build, visible à la racine du dépôt (colonne "Releases").
+      # main = release normale ; staging = pré-release.
+      - name: Publier la GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}-${GITHUB_RUN_NUMBER}"
+          FLAGS=""
+          if [ "$GITHUB_REF_NAME" != "main" ]; then FLAGS="--prerelease"; fi
+          gh release create "$TAG" "release.${GITHUB_REF_NAME}.apk" \
+            --target "$GITHUB_SHA" \
+            --title "release.${GITHUB_REF_NAME} #${GITHUB_RUN_NUMBER}" \
+            --notes "APK ${GITHUB_REF_NAME} - commit ${GITHUB_SHA::7}" \
+            $FLAGS
