@@ -57,8 +57,6 @@ val SetEntity.displayName: String get() = if (isUnannounced) "Set mystère 🥷"
 fun SetEntity.displayPrice(): String =
     if (price == null && isUnannounced) "Prix à venir" else formatPrice(price, currency)
 
-fun legoSearchUrl(number: String) = "https://www.lego.com/fr-fr/search?q=$number"
-
 fun buildShareText(items: List<SetEntity>): String {
     val lines = items.joinToString("\n") { "• ${it.displayName} (n° ${it.number}) – ${it.displayPrice()}" }
     val currencies = items.mapNotNull { it.currency }.distinct()

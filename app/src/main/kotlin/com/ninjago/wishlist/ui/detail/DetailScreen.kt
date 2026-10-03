@@ -1,7 +1,5 @@
 package com.ninjago.wishlist.ui.detail
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -15,8 +13,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,17 +27,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.ninjago.wishlist.data.local.SetEntity
 import com.ninjago.wishlist.ui.common.HeartButton
 import com.ninjago.wishlist.ui.common.displayName
 import com.ninjago.wishlist.ui.common.displayPrice
-import com.ninjago.wishlist.ui.common.legoSearchUrl
-import com.ninjago.wishlist.ui.theme.NinjaBlue
 import com.ninjago.wishlist.ui.theme.NinjaGold
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -54,7 +46,6 @@ fun DetailScreen(
     viewModel: DetailViewModel = koinViewModel(parameters = { parametersOf(id) }),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val context = LocalContext.current
 
     // Les insets système sont déjà gérés par le Scaffold racine.
     Scaffold(
@@ -117,14 +108,6 @@ fun DetailScreen(
                     set.minifigs?.let { InfoRow("Minifigurines", it.toString()) }
                     set.subtheme?.let { InfoRow("Série", it) }
                     InfoRow("Disponibilité", if (set.isCurrent) "En vente ou récent" else "Ancien set")
-
-                    Button(
-                        onClick = { openLego(context, set) },
-                        colors = ButtonDefaults.buttonColors(containerColor = NinjaBlue),
-                        modifier = Modifier.fillMaxWidth().padding(top = 24.dp).height(60.dp),
-                    ) {
-                        Text("Voir sur lego.com", style = MaterialTheme.typography.titleMedium)
-                    }
                 }
             }
         }
@@ -137,8 +120,4 @@ private fun InfoRow(label: String, value: String) {
         Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
         Text(value, fontWeight = FontWeight.SemiBold)
     }
-}
-
-private fun openLego(context: android.content.Context, set: SetEntity) {
-    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(legoSearchUrl(set.number))))
 }
