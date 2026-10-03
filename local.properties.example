@@ -1,0 +1,4 @@
+# Copie ce fichier en "local.properties" (il est ignoré par git) et remplis tes clés.
+sdk.dir=/chemin/vers/Android/Sdk
+BRICKSET_API_KEY=
+REBRICKABLE_API_KEY=

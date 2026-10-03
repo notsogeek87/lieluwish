@@ -1,0 +1,13 @@
+# Clés API et config locale : ne JAMAIS commiter
+local.properties
+*.keystore
+*.jks
+
+.gradle/
+build/
+captures/
+.idea/
+*.iml
+.DS_Store
+.externalNativeBuild/
+.cxx/
