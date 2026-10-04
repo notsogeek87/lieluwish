@@ -2,7 +2,7 @@ name: Release APK
 
 on:
   push:
-    branches: [main, staging]
+    branches: [main, staging, 'claude/**']
   workflow_dispatch:
 
 permissions:
@@ -16,6 +16,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      # versionCode = run_number, versionName = <appVersionBase>.<run_number>, tag = v<versionName>.
+      BUILD_NUMBER: ${{ github.run_number }}
       BRICKSET_API_KEY: ${{ secrets.BRICKSET_API_KEY }}
       REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
     steps:
@@ -44,34 +46,61 @@ jobs:
             echo "::warning::RELEASE_KEYSTORE_BASE64 absent : APK signé avec une clé de debug éphémère (pas de mise à jour possible par-dessus la version précédente)."
           fi
 
-      - name: Build APK release
+      - name: Calculer la version
+        run: |
+          BASE=$(grep '^appVersionBase=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          echo "APP_VERSION=${BASE}.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+
+      # Build + lint : doivent être verts sur la branche de travail avant tout merge vers main/staging.
+      - name: Build APK release + lint
         env:
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease lintRelease --no-daemon
 
-      - name: Renommer l'APK en release.<branche>.apk
-        run: cp app/build/outputs/apk/release/app-release.apk "release.${GITHUB_REF_NAME}.apk"
+      - name: Renommer l'APK en NinjagoWishlist-<version>.apk
+        run: cp app/build/outputs/apk/release/app-release.apk "NinjagoWishlist-${APP_VERSION}.apk"
 
       # On garde aussi l'APK en artifact du run (pratique pour débugger).
       - uses: actions/upload-artifact@v4
         with:
-          name: release.${{ github.ref_name }}
-          path: release.${{ github.ref_name }}.apk
+          name: NinjagoWishlist-${{ env.APP_VERSION }}
+          path: NinjagoWishlist-${{ env.APP_VERSION }}.apk
           if-no-files-found: error
 
-      # Une release par build, visible à la racine du dépôt (colonne "Releases").
-      # main = release normale ; staging = pré-release.
+      # Une release par build sur main/staging (pas sur les branches de travail).
+      # main = release normale (celle que lit la mise à jour automatique : /releases/latest) ;
+      # staging = pré-release, ignorée par /releases/latest.
       - name: Publier la GitHub Release
+        if: github.ref_name == 'main' || github.ref_name == 'staging'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="${GITHUB_REF_NAME}-${GITHUB_RUN_NUMBER}"
+          TAG="v${APP_VERSION}"
           FLAGS=""
           if [ "$GITHUB_REF_NAME" != "main" ]; then FLAGS="--prerelease"; fi
-          gh release create "$TAG" "release.${GITHUB_REF_NAME}.apk" \
+          cat > release-notes.md <<EOF
+          ## Ninjago Wishlist ${APP_VERSION}
+
+          Commit ${GITHUB_SHA::7} (branche ${GITHUB_REF_NAME}).
+
+          ### Vous avez déjà l'application ?
+          Ouvrez-la : elle vérifie les mises à jour à chaque ouverture. Touchez **Installer**, autorisez
+          l'installation d'applications inconnues si Android le demande (puis revenez en arrière), et
+          confirmez avec **Mettre à jour**. Vos données sont conservées.
+          (Vous pouvez aussi aller dans **Paramètres → Rechercher une mise à jour**.)
+
+          ### Première installation (manuelle)
+          1. Téléchargez \`NinjagoWishlist-${APP_VERSION}.apk\` ci-dessous (section *Assets*) sur votre téléphone.
+          2. Ouvrez le fichier téléchargé.
+          3. Si Android bloque l'installation, autorisez la source (navigateur ou gestionnaire de fichiers) quand il vous le propose, puis revenez en arrière.
+          4. Touchez **Installer**.
+
+          Les versions suivantes seront proposées automatiquement à l'ouverture de l'application.
+          EOF
+          gh release create "$TAG" "NinjagoWishlist-${APP_VERSION}.apk" \
             --target "$GITHUB_SHA" \
-            --title "release.${GITHUB_REF_NAME} #${GITHUB_RUN_NUMBER}" \
-            --notes "APK ${GITHUB_REF_NAME} - commit ${GITHUB_SHA::7}" \
+            --title "Ninjago Wishlist ${APP_VERSION}" \
+            --notes-file release-notes.md \
             $FLAGS

@@ -4,6 +4,8 @@ import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.lielu.githubupdater.UpdateConfig
+import com.lielu.githubupdater.UpdateManager
 import com.ninjago.wishlist.data.SetsRepository
 import com.ninjago.wishlist.data.local.AppDatabase
 import com.ninjago.wishlist.data.remote.BricksetApi
@@ -11,6 +13,8 @@ import com.ninjago.wishlist.data.remote.RebrickableApi
 import com.ninjago.wishlist.ui.detail.DetailViewModel
 import com.ninjago.wishlist.ui.hearts.HeartsViewModel
 import com.ninjago.wishlist.ui.sets.SetsViewModel
+import com.ninjago.wishlist.ui.update.AppUpdateViewModel
+import com.ninjago.wishlist.ui.update.updatesEnabledFor
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -68,6 +72,13 @@ private val appModule = module {
             json = get(),
         )
     }
+    single {
+        UpdateManager(
+            androidContext(),
+            UpdateConfig(githubOwner = "notsogeek87", githubRepository = "lieluwish", checkIntervalHours = 1),
+        )
+    }
+    viewModel { AppUpdateViewModel(get(), updatesEnabledFor(androidContext().packageName)) }
     viewModel { SetsViewModel(get()) }
     viewModel { HeartsViewModel(get()) }
     viewModel { (id: String) -> DetailViewModel(id, get()) }

@@ -68,3 +68,19 @@ Secrets du dépôt (*Settings → Secrets and variables → Actions*) :
 Générer la keystore : `keytool -genkeypair -keystore ninjago.jks -alias ninjago -keyalg RSA -keysize 2048
 -validity 10000 -storepass ninjago -keypass ninjago`, puis `base64 -w0 ninjago.jks`.
 Ne jamais la commiter (le dépôt est public).
+
+## Mises à jour automatiques
+
+L'app utilise [lielugit-updater](https://github.com/notsogeek87/lielugit-updater) 1.0.0 : à **chaque ouverture**
+elle cherche la dernière release GitHub (non pré-release) et guide l'utilisateur (Installer → autoriser
+l'installation d'apps inconnues si Android le demande → « Mettre à jour »). Bouton manuel :
+*Paramètres → Rechercher une mise à jour*.
+
+- Dépendance sans jeton ni secret : dépôt Maven de la release vendoré dans `libs/lielugit-maven` (versionné).
+  Mise à jour de la lib : remplacer le dossier par le contenu du zip `lielugit-updater-<version>-maven.zip`
+  (sans `maven-metadata-local.xml`) et changer la version dans `app/build.gradle.kts`.
+- Versions : `versionName = <appVersionBase>.<run_number CI>` (`appVersionBase` dans `gradle.properties`),
+  `versionCode = run_number`, tag de release `v<versionName>`, APK `NinjagoWishlist-<versionName>.apk`.
+- Même `applicationId` et **même clé de signature** pour tous les APK (secret `RELEASE_KEYSTORE_BASE64`).
+- Mises à jour désactivées si l'`applicationId` finit par `.staging`.
+- La première installation est manuelle ; les instructions figurent dans le texte de chaque release.

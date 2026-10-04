@@ -17,6 +17,13 @@ val localProps = Properties().apply {
 fun apiKey(name: String): String =
     (localProps.getProperty(name) ?: System.getenv(name) ?: "").trim()
 
+// Versionnement : versionCode et versionName augmentent à chaque build CI (BUILD_NUMBER = run_number).
+// Le tag de release est v<versionName> (ex. v1.0.152) : il doit se lire comme une version supérieure à
+// celle installée, sinon la bibliothèque ne propose pas la mise à jour.
+val buildNumber = (System.getenv("BUILD_NUMBER") ?: providers.gradleProperty("buildNumber").orNull)
+    ?.toIntOrNull() ?: 1
+val appVersionBase = providers.gradleProperty("appVersionBase").get()
+
 android {
     namespace = "com.ninjago.wishlist"
     compileSdk = 35
@@ -25,8 +32,8 @@ android {
         applicationId = "com.ninjago.wishlist"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = buildNumber
+        versionName = "$appVersionBase.$buildNumber"
 
         buildConfigField("String", "BRICKSET_API_KEY", "\"${apiKey("BRICKSET_API_KEY")}\"")
         buildConfigField("String", "REBRICKABLE_API_KEY", "\"${apiKey("REBRICKABLE_API_KEY")}\"")
@@ -96,4 +103,7 @@ dependencies {
 
     implementation("io.insert-koin:koin-android:3.5.6")
     implementation("io.insert-koin:koin-androidx-compose:3.5.6")
+
+    // Mises à jour automatiques depuis les GitHub Releases (dépôt Maven vendoré dans libs/lielugit-maven).
+    implementation("com.lielu:lielugit-updater:1.0.0")
 }
