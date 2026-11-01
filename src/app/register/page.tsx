@@ -3,10 +3,25 @@ import { SubmitButton } from "@/components/submit-button";
 import { AuthHeader } from "@/components/auth-header";
 import { Flash } from "@/components/flash";
 import { INPUT, PRIMARY_BUTTON } from "@/components/ui";
+import { registrationOpen } from "@/lib/rate-limit";
 import { registerAction } from "./actions";
 
 export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const params = await searchParams;
+
+  if (!registrationOpen()) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-6 py-12 text-center">
+        <AuthHeader
+          title="Inscriptions fermées"
+          subtitle="Pour rejoindre une famille, demandez une invitation à un parent."
+        />
+        <Link href="/login" className="font-medium text-brand-600">
+          Se connecter
+        </Link>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-6 py-12">

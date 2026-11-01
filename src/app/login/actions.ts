@@ -15,7 +15,8 @@ export async function loginAction(formData: FormData): Promise<void> {
     await signIn("credentials", { email, password, redirectTo: callbackUrl });
   } catch (error) {
     if (error instanceof AuthError) {
-      redirect(`/login?error=1&callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      const code = "code" in error && error.code === "rate_limited" ? "rate" : "1";
+      redirect(`/login?error=${code}&callbackUrl=${encodeURIComponent(callbackUrl)}`);
     }
     throw error;
   }

@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import { z } from "zod";
 import { signIn } from "@/lib/auth";
+import { headers } from "next/headers";
 import { registerFamily } from "@/lib/data/users";
+import { clientIp, consumeRateLimit, registrationOpen } from "@/lib/rate-limit";
 
 const schema = z.object({
   familyName: z.string().trim().min(1, "Le nom de la famille est requis.").max(100),
@@ -14,6 +16,10 @@ const schema = z.object({
 });
 
 export async function registerAction(formData: FormData): Promise<void> {
+  if (!registrationOpen()) redirect("/register");
+  if (!(await consumeRateLimit(`register-ip:${clientIp(await headers())}`, 5, 3600))) {
+    redirect(`/register?error=${encodeURIComponent("Trop de tentatives. Réessayez plus tard.")}`);
+  }
   const parsed = schema.safeParse({
     familyName: formData.get("familyName"),
     parentName: formData.get("parentName"),

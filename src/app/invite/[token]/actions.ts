@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import { z } from "zod";
 import { signIn } from "@/lib/auth";
+import { headers } from "next/headers";
 import { acceptInvitation, getInvitationPreview } from "@/lib/data/invitations";
+import { clientIp, consumeRateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Votre prénom est requis."),
@@ -12,6 +14,9 @@ const schema = z.object({
 });
 
 export async function acceptInvitationAction(token: string, formData: FormData): Promise<void> {
+  if (!(await consumeRateLimit(`invite-ip:${clientIp(await headers())}`, 10, 600))) {
+    redirect(`/invite/${token}?error=${encodeURIComponent("Trop de tentatives. Réessayez dans quelques minutes.")}`);
+  }
   const parsed = schema.safeParse({
     name: formData.get("name"),
     password: formData.get("password"),

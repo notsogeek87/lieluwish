@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SubmitButton } from "@/components/submit-button";
 import { AuthHeader } from "@/components/auth-header";
 import { INPUT, PRIMARY_BUTTON } from "@/components/ui";
+import { registrationOpen } from "@/lib/rate-limit";
 import { loginAction } from "./actions";
 
 export default async function LoginPage({
@@ -19,7 +20,11 @@ export default async function LoginPage({
       <form action={loginAction} className="flex flex-col gap-4">
         <input type="hidden" name="callbackUrl" value={callbackUrl} />
         {params.error && (
-          <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">Email ou mot de passe incorrect.</p>
+          <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">
+            {params.error === "rate"
+              ? "Trop de tentatives. Réessayez dans quelques minutes."
+              : "Email ou mot de passe incorrect."}
+          </p>
         )}
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium text-slate-700">Email</span>
@@ -32,12 +37,14 @@ export default async function LoginPage({
         <SubmitButton className={`${PRIMARY_BUTTON} mt-2`}>Se connecter</SubmitButton>
       </form>
 
-      <p className="text-center text-sm text-slate-500">
-        Pas encore de compte ?{" "}
-        <Link href="/register" className="font-medium text-brand-600">
-          Créer notre famille
-        </Link>
-      </p>
+      {registrationOpen() && (
+        <p className="text-center text-sm text-slate-500">
+          Pas encore de compte ?{" "}
+          <Link href="/register" className="font-medium text-brand-600">
+            Créer notre famille
+          </Link>
+        </p>
+      )}
     </main>
   );
 }

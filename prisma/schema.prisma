@@ -138,3 +138,12 @@ model Invitation {
   @@index([familyId])
   @@index([email])
 }
+
+/// Fixed-window attempt counters (login, sign-up, invitation) — see
+/// src/lib/rate-limit.ts. `key` is an HMAC of "<action>:<ip or email>",
+/// never the IP or email itself.
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+}
