@@ -1,86 +1,81 @@
-# Ninjago Wishlist 🥷❤️
+# Lieluwish 🎁
 
-App Android native (Kotlin + Jetpack Compose, minSdk 26) : tous les sets LEGO Ninjago, et un cœur pour
-dire à ses parents ce qu'on veut. Aucune pub, aucun tracker, aucun compte, seule permission : `INTERNET`.
+Application web (PWA) pour gérer les listes de cadeaux des enfants : les parents ajoutent les idées
+(à deux, chacun avec son compte), les grands-parents consultent via un **lien public en lecture
+seule**, sans compte, sur le modèle du lien de partage de [Kigardeki](https://github.com/notsogeek87/kigardeki).
 
-## 1. Obtenir les clés API (gratuit)
+> Avant novembre 2026, Lieluwish était une app Android de wishlist LEGO Ninjago (Kotlin/Compose).
+> Ce code reste disponible dans l'historique Git (commit `dd94a1c` et avant).
 
-| Service | Rôle | Où l'obtenir |
-|---|---|---|
-| **Brickset** (principal) | sets, images, année, prix, pièces, dispo | Créer un compte sur <https://brickset.com>, puis demander une clé sur <https://brickset.com/tools/webservices/requestkey> |
-| **Rebrickable** (secours) | utilisé si Brickset échoue | Compte sur <https://rebrickable.com>, puis *Settings → API* pour générer une clé |
+## Fonctionnalités
 
-Une seule des deux clés suffit (Rebrickable seul = pas de prix).
+- **Enfants** : prénom + couleur.
+- **Cadeaux** par enfant : nom, lien (http/https uniquement), prix, occasion (« Noël 2026 » proposé par
+  défaut, « Anniversaire »…), statut **Idée / Prévu / Acheté**, « offert par », notes privées,
+  ❤️ coup de cœur, 🙈 surprise (masqué du lien public).
+- Filtres par enfant et par occasion, résumé par enfant (nombre, encore libres, budget total).
+  Changement de statut en un clic depuis la liste.
+- **Deux parents** : le premier crée la famille, puis invite l'autre (*Réglages* → lien personnel à
+  usage unique, valable 7 jours). Tous les comptes ont les mêmes droits.
+- **Partager** : lien `/share/<jeton>` pour les grands-parents. Gros texte, sans JavaScript requis,
+  « Encore disponible » en premier, « Déjà prévu / Déjà acheté » barrés. Jamais les notes privées
+  ni les cadeaux 🙈. Révocable à tout moment. Ajout à l'écran d'accueil possible (manifest propre au lien).
 
-## 2. Où les mettre
+Les grands-parents ne réservent pas eux-mêmes un cadeau : la page leur dit de prévenir les parents,
+qui le passent en « Prévu » avec leur nom.
+
+## Stack
+
+Même socle que Kigardeki : **Next.js 14** (App Router, Server Actions) + TypeScript strict,
+**PostgreSQL (Neon)** via **Prisma**, **NextAuth v5** (email + mot de passe, JWT), **Tailwind**, PWA.
+Déploiement cible : **Vercel**.
+
+## Sécurité
+
+- Authentification obligatoire partout (middleware) sauf `/login`, `/register`, `/invite/:token`,
+  `/share/:token`.
+- Chaque fonction de `src/lib/data/*` passe par `requireSession()` et filtre par `familyId`
+  (`assertSameFamily`). Les fonctions `…ForFamily` sans session ne servent qu'à `/share/:token`,
+  après validation du jeton.
+- Chiffrement applicatif AES-256-GCM (`src/lib/crypto.ts`) : nom de famille, prénoms, titres, liens,
+  occasions, « offert par », notes. Les prix restent en clair (sommes de budget).
+- Jetons de partage et d'invitation stockés en HMAC (recherche) + chiffré (réaffichage), jamais en clair.
+- CSP stricte avec nonce, liens externes en `rel="noopener noreferrer nofollow"`.
+
+## Démarrage local
 
 ```bash
-cp local.properties.example local.properties
+cp .env.example .env    # DATABASE_URL, NEXTAUTH_SECRET, ENCRYPTION_KEY…
+npm install
+npm run prisma:deploy   # applique prisma/migrations
+npm run seed            # démo : papa@demo.lieluwish.app / Demo1234!
+npm run dev
 ```
 
-Dans `local.properties` (ignoré par git, ne jamais le commiter) :
+## Scripts
 
-```properties
-sdk.dir=/chemin/vers/Android/Sdk
-BRICKSET_API_KEY=ta_clef_brickset
-REBRICKABLE_API_KEY=ta_clef_rebrickable
-```
+| Commande | Description |
+| --- | --- |
+| `npm run dev` | Serveur de développement |
+| `npm run build` | Build de production (génère aussi le client Prisma) |
+| `npm run lint` / `npm run typecheck` / `npm test` | Qualité (lancés par la CI) |
+| `npm run prisma:migrate` | Nouvelle migration en développement |
+| `npm run prisma:deploy` | Applique les migrations (staging/production) |
+| `npm run seed` | Données de démonstration (jamais en production) |
 
-Les clés peuvent aussi venir de variables d'environnement du même nom. Elles sont injectées dans
-`BuildConfig` : elles se retrouvent dans l'APK, donc ne distribue pas l'APK publiquement.
+## Mise en production (Vercel + Neon)
 
-## 3. Builder
+1. Créer un projet Neon `lieluwish` (une branche par environnement : production, staging…).
+2. Créer le projet Vercel depuis ce dépôt, avec les variables :
+   `DATABASE_URL`, `NEXTAUTH_SECRET` (`openssl rand -base64 32`), `NEXTAUTH_URL` et
+   `NEXT_PUBLIC_APP_URL` (URL publique, utilisée dans les liens de partage), `ENCRYPTION_KEY`
+   (`node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`, différente par
+   environnement, **à ne jamais perdre** : sans elle les données chiffrées sont illisibles).
+3. Appliquer les migrations : `DATABASE_URL=… npm run prisma:deploy`.
+4. Ouvrir l'URL, **Créer notre famille**, ajouter les enfants, inviter l'autre parent
+   (*Réglages*), puis *Partager* → créer le lien et l'envoyer aux grands-parents.
 
-Prérequis : JDK 17+ et le SDK Android (platform 35, build-tools). Avec Android Studio, ouvrir le dossier et lancer.
-En ligne de commande :
+## CI
 
-```bash
-./gradlew assembleDebug
-# APK : app/build/outputs/apk/debug/app-debug.apk
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-```
-
-## Fonctionnement des données
-
-- Rafraîchissement automatique au lancement si le cache a plus de 24 h, et par pull-to-refresh. Cache Room :
-  l'app reste utilisable hors ligne.
-- Brickset : « en vente » = une boutique LEGO.com a une date de début de vente sans date de fin, ou année ≥ année
-  courante − 1. Les autres sets sont masqués, avec un toggle **« Afficher les anciens sets »** et un filtre par année.
-- Rebrickable (secours, thème Ninjago + sous-thèmes) ne donne ni prix ni disponibilité : seul le critère d'année s'applique.
-- Les cœurs sont dans une table Room séparée et survivent aux rafraîchissements.
-
-## Architecture
-
-MVVM · Retrofit + kotlinx.serialization · Room · Coil · Koin · Navigation Compose.
-
-## CI : APK release à chaque push
-
-`.github/workflows/release-apk.yml` construit `release.main.apk` / `release.staging.apk` à chaque push sur
-`main` ou `staging` (onglet *Releases* du dépôt, ou *Actions* → run → *Artifacts*).
-
-Secrets du dépôt (*Settings → Secrets and variables → Actions*) :
-- `BRICKSET_API_KEY` (et optionnellement `REBRICKABLE_API_KEY`).
-- `RELEASE_KEYSTORE_BASE64` : keystore de signature en base64. **Indispensable pour installer une nouvelle
-  version par-dessus l'ancienne** : sans elle, chaque build est signé avec une clé de debug différente.
-  Alias et mots de passe valent `ninjago` par défaut (surchargeables via `RELEASE_KEYSTORE_PASSWORD`,
-  `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`).
-
-Générer la keystore : `keytool -genkeypair -keystore ninjago.jks -alias ninjago -keyalg RSA -keysize 2048
--validity 10000 -storepass ninjago -keypass ninjago`, puis `base64 -w0 ninjago.jks`.
-Ne jamais la commiter (le dépôt est public).
-
-## Mises à jour automatiques
-
-L'app utilise [lielugit-updater](https://github.com/notsogeek87/lielugit-updater) 1.0.0 : à **chaque ouverture**
-elle cherche la dernière release GitHub (non pré-release) et guide l'utilisateur (Installer → autoriser
-l'installation d'apps inconnues si Android le demande → « Mettre à jour »). Bouton manuel :
-*Paramètres → Rechercher une mise à jour*.
-
-- Dépendance sans jeton ni secret : dépôt Maven de la release vendoré dans `libs/lielugit-maven` (versionné).
-  Mise à jour de la lib : remplacer le dossier par le contenu du zip `lielugit-updater-<version>-maven.zip`
-  (sans `maven-metadata-local.xml`) et changer la version dans `app/build.gradle.kts`.
-- Versions : `versionName = <appVersionBase>.<run_number CI>` (`appVersionBase` dans `gradle.properties`),
-  `versionCode = run_number`, tag de release `v<versionName>`, APK `NinjagoWishlist-<versionName>.apk`.
-- Même `applicationId` et **même clé de signature** pour tous les APK (secret `RELEASE_KEYSTORE_BASE64`).
-- Mises à jour désactivées si l'`applicationId` finit par `.staging`.
-- La première installation est manuelle ; les instructions figurent dans le texte de chaque release.
+`.github/workflows/ci.yml` : lint, typecheck, tests (Vitest), build, à chaque push et sur les PR
+vers `staging` / `main`.

@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Lieluwish — les listes de cadeaux des enfants.
+//
+// Les parents ont un compte et gèrent les listes ; les grands-parents
+// consultent via un lien public en lecture seule (ShareLink), sans compte.
+// Les champs personnels (prénoms, titres, liens, notes...) sont chiffrés au
+// niveau applicatif (AES-256-GCM, voir src/lib/crypto.ts).
+// ---------------------------------------------------------------------------
+
+enum GiftStatus {
+  /// Idée de cadeau, personne ne s'en occupe encore.
+  IDEA
+  /// Quelqu'un a prévu de l'offrir (voir `giver`).
+  PLANNED
+  /// Acheté.
+  BOUGHT
+}
+
+model Family {
+  id        String   @id @default(cuid())
+  /// Encrypted at the application layer.
+  name      String
+  createdAt DateTime @default(now())
+
+  users       User[]
+  children    Child[]
+  gifts       Gift[]
+  invitations Invitation[]
+  shareLinks  ShareLink[]
+}
+
+/// Un parent. Tous les comptes d'une famille ont les mêmes droits.
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  /// One-way hash (bcrypt).
+  passwordHash String
+  /// Encrypted at the application layer.
+  name         String
+  familyId     String
+  createdAt    DateTime @default(now())
+
+  family            Family       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  invitationsSent   Invitation[]
+  shareLinksCreated ShareLink[]
+
+  @@index([familyId])
+}
+
+model Child {
+  id        String   @id @default(cuid())
+  familyId  String
+  /// Encrypted at the application layer.
+  firstName String
+  color     String
+  createdAt DateTime @default(now())
+
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  gifts  Gift[]
+
+  @@index([familyId])
+}
+
+model Gift {
+  id         String     @id @default(cuid())
+  familyId   String
+  childId    String
+  // title, url, occasion, giver and notes are encrypted at the application
+  // layer. Lists are small (a few dozen gifts per family): grouping and
+  // filtering by occasion happen in memory after decryption.
+  title      String
+  url        String?
+  /// Price in euro cents. Kept in plaintext to sum budgets.
+  priceCents Int?
+  /// E.g. "Noël 2026", "Anniversaire".
+  occasion   String?
+  status     GiftStatus @default(IDEA)
+  /// Who gives it ("Papi et Mamie", "Nous"...).
+  giver      String?
+  notes      String?
+  /// Coup de cœur de l'enfant.
+  favorite   Boolean    @default(false)
+  /// Hidden on the public share link (e.g. a surprise from the parents).
+  hidden     Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  child  Child  @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@index([childId])
+}
+
+/// A revocable, unauthenticated read-only link to a family's gift lists
+/// (see /share/[token]). The token is the only credential.
+model ShareLink {
+  id             String    @id @default(cuid())
+  familyId       String
+  /// HMAC-SHA256(token) — the lookup index (see src/lib/crypto.ts#hashToken).
+  tokenHash      String    @unique
+  /// AES-256-GCM ciphertext of the token, to redisplay the link to parents.
+  tokenEncrypted String
+  createdBy      String
+  createdAt      DateTime  @default(now())
+  revokedAt      DateTime?
+
+  family  Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  creator User   @relation(fields: [createdBy], references: [id])
+
+  @@index([familyId])
+}
+
+/// Invitation of the other parent, by email, single use, 7 days.
+model Invitation {
+  id             String    @id @default(cuid())
+  familyId       String
+  email          String
+  tokenHash      String    @unique
+  tokenEncrypted String
+  invitedBy      String
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  family  Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  inviter User   @relation(fields: [invitedBy], references: [id])
+
+  @@index([familyId])
+  @@index([email])
+}

@@ -1,13 +1,32 @@
-# Clés API et config locale : ne JAMAIS commiter
-local.properties
-*.keystore
-*.jks
+# dependencies
+node_modules/
 
-.gradle/
+# next.js
+.next/
+out/
 build/
-captures/
-.idea/
-*.iml
+dist/
+
+# env
+.env
+.env*.local
+
+# misc
 .DS_Store
-.externalNativeBuild/
-.cxx/
+*.pem
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# testing
+coverage/
+
+# vercel
+.vercel
+
+# prisma
+prisma/*.db

@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+/* Comfortable one-handed tap targets everywhere. */
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tap-target {
+  min-height: 44px;
+}
+
+/*
+ * The public share page is mostly read by grandparents: scale the whole page
+ * (every rem-based Tailwind size) up by 12.5% — 16px body text becomes 18px.
+ */
+html:has(.share-root) {
+  font-size: 112.5%;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
