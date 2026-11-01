@@ -47,6 +47,14 @@ export function GiftCard({
           {gift.favorite && <span aria-label="Coup de cœur">❤️ </span>}
           {gift.title}
         </p>
+        {audience === "parents" && gift.hidden && (
+          <span
+            className="shrink-0 rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-semibold text-violet-800"
+            title="Surprise : non visible sur le lien de partage"
+          >
+            🙈 Surprise
+          </span>
+        )}
         {gift.priceCents !== null && (
           <span className="shrink-0 font-semibold text-slate-700">{formatPrice(gift.priceCents)}</span>
         )}
@@ -56,7 +64,6 @@ export function GiftCard({
         <span className={`rounded-full px-2.5 py-0.5 font-medium ${STATUS_STYLE[gift.status]}`}>{label}</span>
         {gift.giver && <span className="text-slate-600">par {gift.giver}</span>}
         {showOccasion && gift.occasion && <span className="text-slate-500">· {gift.occasion}</span>}
-        {gift.hidden && <span className="text-slate-500">· 🙈 masqué du partage</span>}
       </div>
 
       {gift.notes && <p className="whitespace-pre-line text-sm text-slate-500">{gift.notes}</p>}
