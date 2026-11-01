@@ -68,11 +68,15 @@ npm run dev
 1. Créer un projet Neon `lieluwish` (une branche par environnement : production, staging…).
 2. Créer le projet Vercel depuis ce dépôt, avec les variables :
    `DATABASE_URL`, `NEXTAUTH_SECRET` (`openssl rand -base64 32`), `NEXTAUTH_URL` et
-   `NEXT_PUBLIC_APP_URL` (URL publique, utilisée dans les liens de partage), `ENCRYPTION_KEY`
+   `NEXT_PUBLIC_APP_URL` (URL publique, utilisée dans les liens de partage :
+   `https://wish.lielu.eu` en production), `ENCRYPTION_KEY`
    (`node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`, différente par
    environnement, **à ne jamais perdre** : sans elle les données chiffrées sont illisibles).
-3. Appliquer les migrations : `DATABASE_URL=… npm run prisma:deploy`.
-4. Ouvrir l'URL, **Créer notre famille**, ajouter les enfants, inviter l'autre parent
+3. Domaine `wish.lielu.eu` : l'ajouter au projet Vercel, puis un CNAME `wish` chez Infomaniak
+   vers la cible indiquée par Vercel. Les URL `*.vercel.app` restent protégées par Vercel : seul ce
+   domaine est public (nécessaire pour les grands-parents).
+4. Appliquer les migrations : `DATABASE_URL=… npm run prisma:deploy`.
+5. Ouvrir l'URL, **Créer notre famille**, ajouter les enfants, inviter l'autre parent
    (*Réglages*), puis *Partager* → créer le lien et l'envoyer aux grands-parents.
 
 ## CI
