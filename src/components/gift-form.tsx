@@ -9,12 +9,17 @@ export function GiftFormFields({
   defaultChildId,
   defaultOccasion,
   occasions,
+  sharedTitle,
+  sharedUrl,
 }: {
   kids: ChildDTO[];
   gift?: GiftDTO;
   defaultChildId?: string;
   defaultOccasion: string;
   occasions: string[];
+  /** Pre-filled from the Android "Share" sheet. */
+  sharedTitle?: string;
+  sharedUrl?: string;
 }) {
   const childId = gift?.childId ?? defaultChildId ?? kids[0]?.id;
 
@@ -50,7 +55,7 @@ export function GiftFormFields({
           name="title"
           required
           maxLength={200}
-          defaultValue={gift?.title}
+          defaultValue={gift?.title ?? sharedTitle}
           placeholder="Ex. : vélo rouge 16 pouces"
           className={INPUT}
         />
@@ -63,7 +68,7 @@ export function GiftFormFields({
           type="text"
           inputMode="url"
           maxLength={2000}
-          defaultValue={gift?.url ?? ""}
+          defaultValue={gift?.url ?? sharedUrl ?? ""}
           placeholder="https://…"
           className={INPUT}
         />

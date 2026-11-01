@@ -126,6 +126,11 @@ export default async function SettingsPage({
       <section className={`${CARD} flex flex-col gap-3`}>
         <h2 className={SECTION_TITLE}>Application</h2>
         <InstallPwaHint />
+        <p className="text-sm text-slate-500">
+          Une fois l&apos;application installée sur Android, <strong>Lieluwish</strong> apparaît dans le menu{" "}
+          <strong>Partager</strong> des autres applis (Amazon, Fnac, navigateur…) : le cadeau s&apos;ouvre
+          pré-rempli avec son nom et son lien.
+        </p>
       </section>
     </div>
   );

@@ -12,7 +12,7 @@ import { createGiftAction } from "../actions";
 export default async function NewGiftPage({
   searchParams,
 }: {
-  searchParams: Promise<{ child?: string; error?: string; added?: string }>;
+  searchParams: Promise<{ child?: string; error?: string; added?: string; shared?: string; title?: string; url?: string }>;
 }) {
   const [kids, occasions, params] = await Promise.all([listChildren(), listOccasions(), searchParams]);
   if (kids.length === 0) redirect("/children");
@@ -23,7 +23,16 @@ export default async function NewGiftPage({
         ← Cadeaux
       </Link>
       <h1 className="text-xl font-bold text-slate-900">Nouveau cadeau</h1>
-      <Flash error={params.error} success={params.added ? "Cadeau ajouté ✓ — vous pouvez en saisir un autre." : undefined} />
+      <Flash
+        error={params.error}
+        success={
+          params.added
+            ? "Cadeau ajouté ✓ — vous pouvez en saisir un autre."
+            : params.shared
+              ? "Lien reçu ✓ — vérifiez le nom, choisissez l'enfant, puis ajoutez."
+              : undefined
+        }
+      />
 
       <form action={createGiftAction} className="flex flex-col gap-4">
         <GiftFormFields
@@ -31,6 +40,8 @@ export default async function NewGiftPage({
           defaultChildId={params.child}
           defaultOccasion={occasions[0] ?? defaultOccasion()}
           occasions={occasions}
+          sharedTitle={params.title}
+          sharedUrl={params.url}
         />
         <SubmitButton className={`${PRIMARY_BUTTON} mt-2`}>Ajouter le cadeau</SubmitButton>
         <button type="submit" name="another" value="1" className={SECONDARY_BUTTON}>

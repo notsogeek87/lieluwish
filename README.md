@@ -15,6 +15,9 @@ seule**, sans compte, sur le modèle du lien de partage de [Kigardeki](https://g
   ❤️ coup de cœur, 🙈 surprise (masqué du lien public).
 - Filtres par enfant et par occasion, résumé par enfant (nombre, encore libres, budget total).
   Changement de statut en un clic depuis la liste.
+- **Partager depuis Amazon (Android)** : une fois l'app installée sur l'écran d'accueil, Lieluwish
+  apparaît dans le menu *Partager* des autres applis ; le formulaire s'ouvre avec le nom et le lien
+  pré-remplis (`share_target` du manifest → `/gifts/share`, voir `src/lib/share-target.ts`).
 - **Deux parents** : le premier crée la famille, puis invite l'autre (*Réglages* → lien personnel à
   usage unique, valable 7 jours). Tous les comptes ont les mêmes droits.
 - **Partager** : lien `/share/<jeton>` pour les grands-parents. Gros texte, sans JavaScript requis,

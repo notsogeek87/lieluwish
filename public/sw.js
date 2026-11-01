@@ -7,7 +7,7 @@
 // when the network is unreachable. RSC/data fetches issued by a client-side
 // <Link> navigation are left to the browser untouched: routing them through
 // the worker (plus a cache write per response) only added latency to clicks.
-const CACHE_NAME = "lieluwish-v1";
+const CACHE_NAME = "lieluwish-v2";
 const APP_SHELL = ["/", "/gifts", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png", "/offline"];
 
 self.addEventListener("install", (event) => {

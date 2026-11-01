@@ -51,7 +51,7 @@ export default auth((req) => {
 
   if (!req.auth && !isPublic) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
-    loginUrl.searchParams.set("callbackUrl", pathname);
+    loginUrl.searchParams.set("callbackUrl", pathname + req.nextUrl.search);
     response = NextResponse.redirect(loginUrl);
   } else if (req.auth && (pathname === "/login" || pathname === "/register")) {
     response = NextResponse.redirect(new URL("/gifts", req.nextUrl.origin));

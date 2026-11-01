@@ -7,7 +7,9 @@ import { signIn } from "@/lib/auth";
 export async function loginAction(formData: FormData): Promise<void> {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
-  const callbackUrl = String(formData.get("callbackUrl") ?? "/gifts");
+  const raw = String(formData.get("callbackUrl") ?? "/gifts");
+  // Only redirect inside the app (never to another site).
+  const callbackUrl = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/gifts";
 
   try {
     await signIn("credentials", { email, password, redirectTo: callbackUrl });
