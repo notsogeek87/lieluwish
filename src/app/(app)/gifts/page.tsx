@@ -98,7 +98,7 @@ export default async function GiftsPage({
             {childGifts.map((gift) => (
               <GiftCard key={gift.id} gift={gift} audience="parents" showOccasion={!occasion}>
                 <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-2">
-                  {GIFT_STATUSES.filter((s) => s !== gift.status).map((status) => (
+                  {(gift.status === "BOUGHT" ? [] : GIFT_STATUSES.filter((s) => s !== gift.status)).map((status) => (
                     <form key={status} action={setGiftStatusAction.bind(null, gift.id, back)}>
                       <input type="hidden" name="status" value={status} />
                       <SubmitButton className="tap-target rounded-lg bg-slate-100 px-3 text-xs font-semibold text-slate-700 active:bg-slate-200">

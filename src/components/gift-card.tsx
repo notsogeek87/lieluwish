@@ -34,12 +34,13 @@ export function GiftCard({
   children?: React.ReactNode;
 }) {
   const taken = gift.status !== "IDEA";
+  const bought = gift.status === "BOUGHT";
   const label = audience === "public" ? PUBLIC_STATUS_LABEL[gift.status] : STATUS_LABEL[gift.status];
 
   return (
     <div
-      className={`flex flex-col gap-2 rounded-2xl border bg-white p-4 shadow-sm ${
-        audience === "public" && taken ? "border-slate-200 opacity-75" : "border-slate-200"
+      className={`flex flex-col gap-2 rounded-2xl border border-slate-200 p-4 shadow-sm ${
+        bought ? "bg-slate-100 opacity-70" : audience === "public" && taken ? "bg-white opacity-75" : "bg-white"
       }`}
     >
       <div className="flex items-start gap-2">
